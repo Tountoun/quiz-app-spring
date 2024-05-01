@@ -6,7 +6,6 @@ import com.telusko.quizapp.model.Question;
 import com.telusko.quizapp.model.QuestionWrapper;
 import com.telusko.quizapp.model.Quiz;
 import com.telusko.quizapp.model.Response;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,10 +17,15 @@ import java.util.Optional;
 @Service
 public class QuizService {
 
-    @Autowired
-    QuizDao quizDao;
-    @Autowired
-    QuestionDao questionDao;
+
+    private final QuizDao quizDao;
+
+    private final QuestionDao questionDao;
+
+    public QuizService(QuizDao quizDao, QuestionDao questionDao) {
+        this.quizDao = quizDao;
+        this.questionDao = questionDao;
+    }
 
 
     public ResponseEntity<String> createQuiz(String category, int numQ, String title) {
@@ -58,7 +62,6 @@ public class QuizService {
         for(Response response : responses){
             if(response.getResponse().equals(questions.get(i).getRightAnswer()))
                 right++;
-
             i++;
         }
         return new ResponseEntity<>(right, HttpStatus.OK);

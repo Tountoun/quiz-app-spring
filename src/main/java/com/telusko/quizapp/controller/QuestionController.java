@@ -3,7 +3,6 @@ package com.telusko.quizapp.controller;
 
 import com.telusko.quizapp.model.Question;
 import com.telusko.quizapp.service.QuestionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,8 +12,11 @@ import java.util.List;
 @RequestMapping("question")
 public class QuestionController {
 
-    @Autowired
-    QuestionService questionService;
+    private final QuestionService questionService;
+
+    public QuestionController(QuestionService questionService) {
+        this.questionService = questionService;
+    }
 
     @GetMapping("allQuestions")
     public ResponseEntity<List<Question>> getAllQuestions(){
