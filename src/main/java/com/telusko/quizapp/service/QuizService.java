@@ -2,10 +2,12 @@ package com.telusko.quizapp.service;
 
 import com.telusko.quizapp.dao.QuestionDao;
 import com.telusko.quizapp.dao.QuizDao;
+import com.telusko.quizapp.exception.QuizException;
 import com.telusko.quizapp.model.Question;
 import com.telusko.quizapp.model.QuestionWrapper;
 import com.telusko.quizapp.model.Quiz;
 import com.telusko.quizapp.model.Response;
+import com.telusko.quizapp.utils.QuizWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -28,20 +30,24 @@ public class QuizService {
     }
 
 
-    public ResponseEntity<String> createQuiz(String category, int numQ, String title) {
+    public QuizWrapper createQuiz(String category, int numQ, String title) {
+        if (questionDao.existsByQuestionTitle(title)) {
+            throw new QuizException("Quiz with title " + title + " already exists");
+        }
 
         List<Question> questions = questionDao.findRandomQuestionsByCategory(category, numQ);
 
         Quiz quiz = new Quiz();
         quiz.setTitle(title);
         quiz.setQuestions(questions);
-        quizDao.save(quiz);
-
-        return new ResponseEntity<>("Success", HttpStatus.CREATED);
-
+        quiz = quizDao.save(quiz);
+        return QuizWrapper.builder().id(quiz.getId()).title(quiz.getTitle()).build();
     }
 
-    public ResponseEntity<List<QuestionWrapper>> getQuizQuestions(Integer id) {
+    public List<QuestionWrapper> getQuizQuestions(Integer id) {
+        if (!quizDao.existsById(id)) {
+            throw new QuizException("Quiz with id " + id + " does not exist");
+        }
         Optional<Quiz> quiz = quizDao.findById(id);
         List<Question> questionsFromDB = quiz.get().getQuestions();
         List<QuestionWrapper> questionsForUser = new ArrayList<>();
@@ -50,11 +56,11 @@ public class QuizService {
             questionsForUser.add(qw);
         }
 
-        return new ResponseEntity<>(questionsForUser, HttpStatus.OK);
+        return questionsForUser;
 
     }
 
-    public ResponseEntity<Integer> calculateResult(Integer id, List<Response> responses) {
+    public Integer calculateResult(Integer id, List<Response> responses) {
         Quiz quiz = quizDao.findById(id).get();
         List<Question> questions = quiz.getQuestions();
         int right = 0;
@@ -64,6 +70,6 @@ public class QuizService {
                 right++;
             i++;
         }
-        return new ResponseEntity<>(right, HttpStatus.OK);
+        return right;
     }
 }
