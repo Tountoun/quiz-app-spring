@@ -31,7 +31,7 @@ public class QuizService {
 
 
     public QuizWrapper createQuiz(String category, int numQ, String title) {
-        if (questionDao.existsByQuestionTitle(title)) {
+        if (quizDao.existsByTitle(title)) {
             throw new QuizException("Quiz with title " + title + " already exists");
         }
 
